@@ -59,7 +59,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	a := &events.Article{}
 	err = json.Unmarshal(d, a)
 	if err != nil {

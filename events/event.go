@@ -20,7 +20,7 @@ type Article struct {
 	ID           string
 	EventVersion int
 	State        string
-	Article      string
+	Content      string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -50,5 +50,5 @@ func (a *Article) At() time.Time {
 }
 
 func (a *Article) Data() string {
-	return a.Article
+	return a.Content
 }

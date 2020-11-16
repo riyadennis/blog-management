@@ -36,7 +36,7 @@ func Store(ctx context.Context, e *commands.CreateCommand) error {
 		return err
 	}
 
-	_, err = query.Exec(e.ID, e.EventVersion, e.State, e.Article)
+	_, err = query.Exec(e.ID, e.EventVersion, e.State, e.Content)
 	if err != nil {
 		return err
 	}
