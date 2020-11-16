@@ -16,7 +16,7 @@ type Event interface {
 }
 
 //Article is the bounded context to hold versions of article data
-type ArticleEvent struct {
+type Article struct {
 	ID           string
 	EventVersion int
 	State        string
@@ -26,29 +26,29 @@ type ArticleEvent struct {
 }
 
 type ArticleCreated struct {
-	*ArticleEvent
+	*Article
 }
 
 type ArticlePublished struct {
-	*ArticleEvent
+	*Article
 }
 
 type ArticleArchived struct {
-	*ArticleEvent
+	*Article
 }
 
-func (a *ArticleEvent) AggregateID() string {
+func (a *Article) AggregateID() string {
 	return a.ID
 }
 
-func (a *ArticleEvent) Version() int {
+func (a *Article) Version() int {
 	return a.EventVersion
 }
 
-func (a *ArticleEvent) At() time.Time {
+func (a *Article) At() time.Time {
 	return a.CreatedAt
 }
 
-func (a *ArticleEvent) Data() string {
+func (a *Article) Data() string {
 	return a.Article
 }

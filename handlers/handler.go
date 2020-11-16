@@ -20,6 +20,12 @@ type Handler struct {
 	Name string
 }
 
+func CreateArticle() *Handler {
+	return &Handler{
+		Name: events.StatusCreated,
+	}
+}
+
 func (h *Handler) Apply(ctx context.Context, e commands.Command) ([]events.Event, error) {
 	var ev []events.Event
 	switch h.Name {
@@ -54,31 +60,37 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e := &events.ArticleEvent{}
-	err = json.Unmarshal(d, e)
+	a := &events.Article{}
+	err = json.Unmarshal(d, a)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	e.State = events.StatusCreated
-	e.CreatedAt = time.Now()
-	e.UpdatedAt = time.Now()
+	a.State = events.StatusCreated
+	a.CreatedAt = time.Now()
+	a.UpdatedAt = time.Now()
 
 	command := commands.CreateCommand{
-		ArticleCreated: events.ArticleCreated{ArticleEvent: e},
+		ArticleCreated: events.ArticleCreated{Article: a},
 	}
-	h := Handler{
-		Name: events.StatusCreated,
-	}
+
 	ctx := r.Context()
-	_, err = h.Apply(ctx, command)
+	es, err := CreateArticle().Apply(ctx, command)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	w.Write([]byte("Success"))
+	response, err := json.Marshal(es)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
 }
