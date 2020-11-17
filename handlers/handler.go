@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// CreateEvent is the http handler which will call command handler to
+// CreateEvent is the http handler which will call command the to
 // create a new article
 // I have seen implementations where single http handler handles
 // different commands by reading domain-model from the header
