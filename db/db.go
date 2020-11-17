@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"github.com/riyadennis/blog-management/events"
 	"os"
+	"time"
 )
+
+const TimeOut = 5
 
 // Article holds structure of the blob in Article event
 type Article struct {
@@ -44,6 +47,9 @@ func NewConn() (*Config, error) {
 }
 
 func (c *Config) Add(ctx context.Context, state string, e events.Event) error {
+	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
+	defer cancel()
+
 	if e == nil {
 		return errors.New("empty event")
 	}
@@ -52,7 +58,7 @@ func (c *Config) Add(ctx context.Context, state string, e events.Event) error {
 		return err
 	}
 
-	_, err = query.Exec(e.AggregateID(), e.Version(), state, e.Data())
+	_, err = query.ExecContext(ctx, e.AggregateID(), e.Version(), state, e.Data())
 	if err != nil {
 		return err
 	}

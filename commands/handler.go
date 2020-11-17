@@ -10,12 +10,26 @@ import (
 )
 
 type CommandHandler interface {
+	SetEvent(e events.Event)
 	AggregateID() string
+	GetEvent() events.Event
 	Create(store db.EventStore, w http.ResponseWriter, r *http.Request)
 }
 
 type CommandArticle struct {
 	Event events.Event
+}
+
+func (c *CommandArticle) SetEvent(e events.Event) {
+	c.Event = e
+}
+
+func (c *CommandArticle) GetEvent() events.Event {
+	if c == nil {
+		return nil
+	}
+
+	return c.Event
 }
 
 func (c *CommandArticle) AggregateID() string {
@@ -42,10 +56,12 @@ func (c *CommandArticle) Create(store db.EventStore, w http.ResponseWriter, r *h
 		return
 	}
 
-	c.Event = events.AssignEvent(a.State, a)
+	c.SetEvent(events.AssignEvent(a.State, a))
+
 	ctx := r.Context()
 
-	err = store.Add(ctx, a.State, c.Event)
+	// not sure whether we should add event or command to store
+	err = store.Add(ctx, a.State, c.GetEvent())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
