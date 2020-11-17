@@ -1,10 +1,10 @@
-package db
+package commands
 
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"github.com/riyadennis/blog-management/commands"
 	"os"
 )
 
@@ -16,7 +16,15 @@ type Article struct {
 	Body      string
 }
 
-func Store(ctx context.Context, e *commands.CreateCommand) error {
+type EventStore interface {
+	Add(ctx context.Context, e Command) error
+}
+
+type Config struct {
+	Conn *sql.DB
+}
+
+func NewConn() (*Config, error) {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		os.Getenv("MYSQL_USERNAME"),
@@ -28,19 +36,27 @@ func Store(ctx context.Context, e *commands.CreateCommand) error {
 
 	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	query, err := conn.Prepare("INSERT INTO events_store(id,version,state,data) values(?,?,?,?)")
+	return &Config{Conn: conn}, nil
+}
+
+func (c *Config) Add(ctx context.Context, e Command) error {
+	query, err := c.Conn.Prepare("INSERT INTO events_store(id,version,state,data) values(?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = query.Exec(e.ID, e.EventVersion, e.State, e.Content)
+	cc, ok := e.(CreateCommand)
+	if !ok {
+		return errors.New("invalid command")
+	}
+
+	_, err = query.Exec(cc.ID, cc.EventVersion, cc.State, cc.Content)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
 
 	return nil
 }
