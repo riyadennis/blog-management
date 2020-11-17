@@ -27,7 +27,7 @@ func init() {
 
 func main() {
 	http.HandleFunc("/api/v1/CreateArticle", func(w http.ResponseWriter, r *http.Request) {
-		commands.CreateArticle(conn, w, r)
+		commands.NewCommand().Create(conn, w, r)
 	})
 
 	err = http.ListenAndServe(":8080", nil)

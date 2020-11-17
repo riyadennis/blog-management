@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/riyadennis/blog-management/events"
 	"os"
@@ -17,7 +18,7 @@ type Article struct {
 }
 
 type EventStore interface {
-	Add(ctx context.Context, e *events.Article) error
+	Add(ctx context.Context, state string, e events.Event) error
 }
 
 type Config struct {
@@ -42,13 +43,16 @@ func NewConn() (*Config, error) {
 	return &Config{Conn: conn}, nil
 }
 
-func (c *Config) Add(ctx context.Context, e *events.Article) error {
+func (c *Config) Add(ctx context.Context, state string, e events.Event) error {
+	if e == nil {
+		return errors.New("empty event")
+	}
 	query, err := c.Conn.Prepare("INSERT INTO events_store(id,version,state,data) values(?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = query.Exec(e.ID, e.EventVersion, e.State, e.Content)
+	_, err = query.Exec(e.AggregateID(), e.Version(), state, e.Data())
 	if err != nil {
 		return err
 	}

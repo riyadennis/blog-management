@@ -1,6 +1,8 @@
 package events
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	StatusCreated   = "created"
@@ -51,4 +53,17 @@ func (a *Article) At() time.Time {
 
 func (a *Article) Data() string {
 	return a.Content
+}
+
+func AssignEvent(state string, a *Article) Event {
+	switch state {
+	case StatusCreated:
+		return &ArticleCreated{Article: a}
+	case StatusPublished:
+		return &ArticlePublished{Article: a}
+	case StatusArchived:
+		return &ArticleArchived{Article: a}
+	default:
+		return nil
+	}
 }
