@@ -13,7 +13,7 @@ type CommandHandler interface {
 	SetEvent(e events.Event)
 	AggregateID() string
 	GetEvent() events.Event
-	Create(store db.EventStore, w http.ResponseWriter, r *http.Request)
+	CreateArticle(store db.EventStore, w http.ResponseWriter, r *http.Request)
 }
 
 type CommandArticle struct {
@@ -39,7 +39,7 @@ func (c *CommandArticle) AggregateID() string {
 func NewCommand() *CommandArticle {
 	return &CommandArticle{}
 }
-func (c *CommandArticle) Create(store db.EventStore, w http.ResponseWriter, r *http.Request) {
+func (c *CommandArticle) CreateArticle(store db.EventStore, w http.ResponseWriter, r *http.Request) {
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.Write([]byte(err.Error()))
