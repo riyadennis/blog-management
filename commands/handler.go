@@ -1,24 +1,17 @@
-package handlers
+package commands
 
 import (
 	"encoding/json"
-	"github.com/riyadennis/blog-management/commands"
-	"github.com/riyadennis/blog-management/events"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/riyadennis/blog-management/db"
+	"github.com/riyadennis/blog-management/events"
 )
 
-// CreateEvent is the http handler which will call command the to
-// create a new article
-// I have seen implementations where single http handler handles
-// different commands by reading domain-model from the header
-// TODO check with David whether what is the right approach
-// command := r.Header.Get("domain-model")
-// if command != "CreateEventCommand"{
-//	call create event handler
-// }
-func CreateEvent(store commands.EventStore, w http.ResponseWriter, r *http.Request) {
+// CreateArticle is the http handler which will act like a command to create a new article
+func CreateArticle(store db.EventStore, w http.ResponseWriter, r *http.Request) {
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.Write([]byte(err.Error()))
@@ -40,7 +33,7 @@ func CreateEvent(store commands.EventStore, w http.ResponseWriter, r *http.Reque
 	a.CreatedAt = time.Now()
 	a.UpdatedAt = time.Now()
 
-	command := commands.CreateCommand{
+	command := CreateCommand{
 		ArticleCreated: events.ArticleCreated{Article: a},
 	}
 

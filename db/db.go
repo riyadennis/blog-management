@@ -1,14 +1,14 @@
-package commands
+package db
 
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
+	"github.com/riyadennis/blog-management/events"
 	"os"
 )
 
-// Article holds structure of the blob in Article
+// Article holds structure of the blob in Article event
 type Article struct {
 	CreatedBy string
 	Name      string
@@ -17,7 +17,7 @@ type Article struct {
 }
 
 type EventStore interface {
-	Add(ctx context.Context, e Command) error
+	Add(ctx context.Context, e *events.Article) error
 }
 
 type Config struct {
@@ -42,18 +42,13 @@ func NewConn() (*Config, error) {
 	return &Config{Conn: conn}, nil
 }
 
-func (c *Config) Add(ctx context.Context, e Command) error {
+func (c *Config) Add(ctx context.Context, e *events.Article) error {
 	query, err := c.Conn.Prepare("INSERT INTO events_store(id,version,state,data) values(?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	cc, ok := e.(CreateCommand)
-	if !ok {
-		return errors.New("invalid command")
-	}
-
-	_, err = query.Exec(cc.ID, cc.EventVersion, cc.State, cc.Content)
+	_, err = query.Exec(e.ID, e.EventVersion, e.State, e.Content)
 	if err != nil {
 		return err
 	}

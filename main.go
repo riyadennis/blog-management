@@ -4,13 +4,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/riyadennis/blog-management/commands"
-	"github.com/riyadennis/blog-management/handlers"
+	"github.com/riyadennis/blog-management/db"
 	"log"
 	"net/http"
 )
 
 var (
-	conn commands.EventStore
+	conn db.EventStore
 	err  error
 )
 
@@ -19,7 +19,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	conn, err = commands.NewConn()
+	conn, err = db.NewConn()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,8 +27,9 @@ func init() {
 
 func main() {
 	http.HandleFunc("/api/v1/CreateArticle", func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreateEvent(conn, w, r)
+		commands.CreateArticle(conn, w, r)
 	})
+
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
