@@ -11,8 +11,8 @@ import (
 
 type CommandHandler interface {
 	SetEvent(e events.Event)
-	AggregateID() string
 	GetEvent() events.Event
+	AggregateID() string
 	CreateArticle(store db.EventStore, w http.ResponseWriter, r *http.Request)
 }
 
