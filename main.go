@@ -1,12 +1,14 @@
 package main
 
 import (
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
-	"github.com/riyadennis/blog-management/commands"
-	"github.com/riyadennis/blog-management/eventsource"
 	"log"
 	"net/http"
+
+	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/joho/godotenv"
+	"github.com/riyadennis/blog-management/api/v1/CreateArticle"
+	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
 var (
@@ -26,10 +28,7 @@ func init() {
 }
 
 func main() {
-	command := commands.NewCommand()
-	http.HandleFunc("/api/v1/CreateArticle", func(w http.ResponseWriter, r *http.Request) {
-		command.CreateArticle(eventStore, w, r)
-	})
+	http.HandleFunc("/api/v1/CreateArticle", CreateArticle.NewCommand(eventStore).ServeHTTP)
 
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {

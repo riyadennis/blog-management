@@ -13,7 +13,6 @@ const (
 type Event interface {
 	AggregateID() string
 	At() time.Time
-	Data() string
 }
 
 //Model is the bounded context to hold versions of article data
@@ -22,7 +21,7 @@ type Model struct {
 	ID        string
 	Version   int
 	State     string
-	Content   string
+	Content   interface{}
 	CreatedAt time.Time
 }
 
@@ -44,10 +43,6 @@ func (a *Model) AggregateID() string {
 
 func (a *Model) At() time.Time {
 	return a.CreatedAt
-}
-
-func (a *Model) Data() string {
-	return a.Content
 }
 
 func AssignEvent(a *Model) Event {

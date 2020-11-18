@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/riyadennis/blog-management/events"
+	"github.com/riyadennis/blog-management/pkg/api/events"
 	"os"
 	"time"
 )
@@ -17,11 +17,11 @@ type Article struct {
 	Author       string
 	Heading      string
 	Introduction string
-	End          string
+	Body         string
 }
 
 type EventStore interface {
-	Apply(ctx context.Context, e events.Event) error
+	Apply(ctx context.Context, e events.Event, content string) error
 	Load(ctx context.Context, aggregateId string) ([]events.Event, error)
 }
 
@@ -47,7 +47,7 @@ func NewConn() (*Config, error) {
 	return &Config{Conn: conn}, nil
 }
 
-func (c *Config) Apply(ctx context.Context, e events.Event) error {
+func (c *Config) Apply(ctx context.Context, e events.Event, content string) error {
 	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
 	defer cancel()
 
@@ -65,7 +65,7 @@ func (c *Config) Apply(ctx context.Context, e events.Event) error {
 		return err
 	}
 
-	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, model.Content)
+	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, content)
 	if err != nil {
 		return err
 	}
@@ -81,8 +81,11 @@ func (c *Config) Load(ctx context.Context, aggregateID string) ([]events.Event, 
 		return nil, errors.New("empty aggregate id")
 	}
 
-	rows, err := c.Conn.QueryContext(ctx,
-		"SELECT version,state,data,created_at FROM events_store WHERE id=?", aggregateID)
+	rows, err := c.Conn.QueryContext(
+		ctx,
+		"SELECT version,state,data,created_at FROM events_store WHERE id=?",
+		aggregateID,
+	)
 	if err != nil {
 		return nil, err
 	}

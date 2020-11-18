@@ -1,46 +1,21 @@
-package commands
+package CreateArticle
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/riyadennis/blog-management/events"
-	"github.com/riyadennis/blog-management/eventsource"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/riyadennis/blog-management/pkg/api/events"
+	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
-type CommandHandler interface {
-	SetEvent(e events.Event)
-	GetEvent() events.Event
-	AggregateID() string
-	CreateArticle(store eventsource.EventStore, w http.ResponseWriter, r *http.Request)
+type Command struct {
+	EventStore eventsource.EventStore
+	Event      events.Event
 }
 
-type CommandArticle struct {
-	Event events.Event
-}
-
-func (c *CommandArticle) SetEvent(e events.Event) {
-	c.Event = e
-}
-
-func (c *CommandArticle) GetEvent() events.Event {
-	if c == nil {
-		return nil
-	}
-
-	return c.Event
-}
-
-func (c *CommandArticle) AggregateID() string {
-	return c.Event.AggregateID()
-}
-
-func NewCommand() *CommandArticle {
-	return &CommandArticle{}
-}
-
-func (c *CommandArticle) CreateArticle(eventStore eventsource.EventStore, w http.ResponseWriter, r *http.Request) {
+func (c *Command) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.Write([]byte(err.Error()))
@@ -56,8 +31,17 @@ func (c *CommandArticle) CreateArticle(eventStore eventsource.EventStore, w http
 		w.Write([]byte(err.Error()))
 		return
 	}
+
+	jc, err := json.Marshal(a.Content)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
 	ctx := r.Context()
-	eventHistory, err := eventStore.Load(ctx, a.ID)
+
+	eventHistory, err := c.EventStore.Load(ctx, a.ID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
@@ -66,10 +50,9 @@ func (c *CommandArticle) CreateArticle(eventStore eventsource.EventStore, w http
 	latestVersion := eventVersion(eventHistory)
 
 	a.Version = latestVersion + 1
-
 	c.SetEvent(events.AssignEvent(a))
 
-	err = eventStore.Apply(ctx, a)
+	err = c.EventStore.Apply(ctx, a, string(jc))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
@@ -79,6 +62,18 @@ func (c *CommandArticle) CreateArticle(eventStore eventsource.EventStore, w http
 	w.WriteHeader(http.StatusOK)
 	url := fmt.Sprintf("/v1/%s", c.AggregateID())
 	w.Write([]byte(url))
+}
+
+func NewCommand(e eventsource.EventStore) *Command {
+	return &Command{EventStore: e}
+}
+
+func (c *Command) AggregateID() string {
+	return c.Event.AggregateID()
+}
+
+func (c *Command) SetEvent(e events.Event) {
+	c.Event = e
 }
 
 func eventVersion(eventHistory []events.Event) int {
