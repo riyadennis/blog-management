@@ -12,57 +12,51 @@ const (
 
 type Event interface {
 	AggregateID() string
-	Version() int
 	At() time.Time
 	Data() string
 }
 
-//Article is the bounded context to hold versions of article data
-type Article struct {
+//Model is the bounded context to hold versions of article data
+type Model struct {
 	ID           string
 	EventVersion int
 	State        string
 	Content      string
 	CreatedAt    time.Time
-	UpdatedAt    time.Time
 }
 
-type ArticleCreated struct {
-	*Article
+type EventCreated struct {
+	*Model
 }
 
-type ArticlePublished struct {
-	*Article
+type EventPublished struct {
+	*Model
 }
 
-type ArticleArchived struct {
-	*Article
+type EventArchived struct {
+	*Model
 }
 
-func (a *Article) AggregateID() string {
+func (a *Model) AggregateID() string {
 	return a.ID
 }
 
-func (a *Article) Version() int {
-	return a.EventVersion
-}
-
-func (a *Article) At() time.Time {
+func (a *Model) At() time.Time {
 	return a.CreatedAt
 }
 
-func (a *Article) Data() string {
+func (a *Model) Data() string {
 	return a.Content
 }
 
-func AssignEvent(state string, a *Article) Event {
-	switch state {
+func AssignEvent(a *Model) Event {
+	switch a.State {
 	case StatusCreated:
-		return &ArticleCreated{Article: a}
+		return &EventCreated{Model: a}
 	case StatusPublished:
-		return &ArticlePublished{Article: a}
+		return &EventPublished{Model: a}
 	case StatusArchived:
-		return &ArticleArchived{Article: a}
+		return &EventArchived{Model: a}
 	default:
 		return nil
 	}

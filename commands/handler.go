@@ -3,8 +3,8 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/riyadennis/blog-management/db"
 	"github.com/riyadennis/blog-management/events"
+	"github.com/riyadennis/blog-management/eventsource"
 	"io/ioutil"
 	"net/http"
 )
@@ -13,7 +13,7 @@ type CommandHandler interface {
 	SetEvent(e events.Event)
 	GetEvent() events.Event
 	AggregateID() string
-	CreateArticle(store db.EventStore, w http.ResponseWriter, r *http.Request)
+	CreateArticle(store eventsource.EventStore, w http.ResponseWriter, r *http.Request)
 }
 
 type CommandArticle struct {
@@ -39,7 +39,8 @@ func (c *CommandArticle) AggregateID() string {
 func NewCommand() *CommandArticle {
 	return &CommandArticle{}
 }
-func (c *CommandArticle) CreateArticle(store db.EventStore, w http.ResponseWriter, r *http.Request) {
+
+func (c *CommandArticle) CreateArticle(eventStore eventsource.EventStore, w http.ResponseWriter, r *http.Request) {
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.Write([]byte(err.Error()))
@@ -48,7 +49,7 @@ func (c *CommandArticle) CreateArticle(store db.EventStore, w http.ResponseWrite
 
 	w.Header().Set("Content-Type", "application/json")
 
-	a := &events.Article{}
+	a := &events.Model{}
 	err = json.Unmarshal(d, a)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -56,12 +57,12 @@ func (c *CommandArticle) CreateArticle(store db.EventStore, w http.ResponseWrite
 		return
 	}
 
-	c.SetEvent(events.AssignEvent(a.State, a))
+	c.SetEvent(events.AssignEvent(a))
 
 	ctx := r.Context()
 
-	// not sure whether we should add event or command to store
-	err = store.Add(ctx, a.State, c.GetEvent())
+	// not sure whether we should add event or command to eventStore
+	err = eventStore.Apply(ctx, c.GetEvent())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))

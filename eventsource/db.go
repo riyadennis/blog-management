@@ -1,4 +1,4 @@
-package db
+package eventsource
 
 import (
 	"context"
@@ -14,14 +14,14 @@ const TimeOut = 5
 
 // Article holds structure of the blob in Article event
 type Article struct {
-	CreatedBy string
-	Name      string
-	Heading   string
-	Body      string
+	Author       string
+	Heading      string
+	Introduction string
+	End          string
 }
 
 type EventStore interface {
-	Add(ctx context.Context, state string, e events.Event) error
+	Apply(ctx context.Context, e events.Event) error
 }
 
 type Config struct {
@@ -46,19 +46,25 @@ func NewConn() (*Config, error) {
 	return &Config{Conn: conn}, nil
 }
 
-func (c *Config) Add(ctx context.Context, state string, e events.Event) error {
+func (c *Config) Apply(ctx context.Context, e events.Event) error {
 	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
 	defer cancel()
 
 	if e == nil {
 		return errors.New("empty event")
 	}
+
+	model, ok := e.(*events.Model)
+	if !ok {
+		return errors.New("invalid event")
+	}
+
 	query, err := c.Conn.Prepare("INSERT INTO events_store(id,version,state,data) values(?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = query.ExecContext(ctx, e.AggregateID(), e.Version(), state, e.Data())
+	_, err = query.ExecContext(ctx, e.AggregateID(), model.EventVersion, model.State, e.Data())
 	if err != nil {
 		return err
 	}
