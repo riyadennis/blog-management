@@ -17,12 +17,13 @@ type Event interface {
 }
 
 //Model is the bounded context to hold versions of article data
+// its the representation how data is store in event store
 type Model struct {
-	ID           string
-	EventVersion int
-	State        string
-	Content      string
-	CreatedAt    time.Time
+	ID        string
+	Version   int
+	State     string
+	Content   string
+	CreatedAt time.Time
 }
 
 type EventCreated struct {

@@ -56,13 +56,20 @@ func (c *CommandArticle) CreateArticle(eventStore eventsource.EventStore, w http
 		w.Write([]byte(err.Error()))
 		return
 	}
+	ctx := r.Context()
+	eventHistory, err := eventStore.Load(ctx, a.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	latestVersion := eventVersion(eventHistory)
+
+	a.Version = latestVersion + 1
 
 	c.SetEvent(events.AssignEvent(a))
 
-	ctx := r.Context()
-
-	// not sure whether we should add event or command to eventStore
-	err = eventStore.Apply(ctx, c.GetEvent())
+	err = eventStore.Apply(ctx, a)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
@@ -72,4 +79,21 @@ func (c *CommandArticle) CreateArticle(eventStore eventsource.EventStore, w http
 	w.WriteHeader(http.StatusOK)
 	url := fmt.Sprintf("/v1/%s", c.AggregateID())
 	w.Write([]byte(url))
+}
+
+func eventVersion(eventHistory []events.Event) int {
+	if eventHistory == nil {
+		return 1
+	}
+	var latestVersion int
+	for _, e := range eventHistory {
+		if e == nil {
+			continue
+		}
+		m := e.(*events.Model)
+		if m.Version > latestVersion {
+			latestVersion = m.Version
+		}
+	}
+	return latestVersion
 }
