@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/riyadennis/blog-management/api/v1/article"
+	"github.com/riyadennis/blog-management/api"
 	"log"
 	"net/http"
 
@@ -28,7 +28,7 @@ func init() {
 }
 
 func main() {
-	err = http.ListenAndServe(":8080", article.NewArticle(eventStore))
+	err = http.ListenAndServe(":8080", api.NewAPIv1(eventStore))
 	if err != nil {
 		log.Fatal(err)
 	}
