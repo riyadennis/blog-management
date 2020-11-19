@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/riyadennis/blog-management/api/v1/article"
 	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/joho/godotenv"
-	"github.com/riyadennis/blog-management/api/v1/CreateArticle"
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
@@ -28,9 +28,7 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/api/v1/CreateArticle", CreateArticle.NewCommand(eventStore).ServeHTTP)
-
-	err = http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", article.NewArticle(eventStore))
 	if err != nil {
 		log.Fatal(err)
 	}

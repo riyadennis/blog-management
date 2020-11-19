@@ -3,6 +3,7 @@ package eventsource
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/riyadennis/blog-management/pkg/api/events"
@@ -21,7 +22,7 @@ type Article struct {
 }
 
 type EventStore interface {
-	Apply(ctx context.Context, e events.Event, content string) error
+	Apply(ctx context.Context, e events.Event) error
 	Load(ctx context.Context, aggregateId string) ([]events.Event, error)
 }
 
@@ -47,7 +48,7 @@ func NewConn() (*Config, error) {
 	return &Config{Conn: conn}, nil
 }
 
-func (c *Config) Apply(ctx context.Context, e events.Event, content string) error {
+func (c *Config) Apply(ctx context.Context, e events.Event) error {
 	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
 	defer cancel()
 
@@ -65,7 +66,12 @@ func (c *Config) Apply(ctx context.Context, e events.Event, content string) erro
 		return err
 	}
 
-	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, content)
+	ac, err := json.Marshal(model.Content)
+	if err != nil {
+		return err
+	}
+
+	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, string(ac))
 	if err != nil {
 		return err
 	}
