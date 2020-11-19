@@ -18,6 +18,7 @@ func NewArticle(e eventsource.EventStore) *Article {
 func (a *Article) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.Path
 	w.Header().Set("Content-Type", "application/json")
+
 	matched, err := path.Match("/api/v1/article/*", p)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -41,4 +42,6 @@ func (a *Article) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Success"))
 }
