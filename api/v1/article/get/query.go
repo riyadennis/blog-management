@@ -8,11 +8,7 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
-type Query struct {
-	EventStore eventsource.EventStore
-}
-
-func Aggregate(ctx context.Context, store eventsource.EventStore, refID string) ([]byte, error) {
+func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]byte, error) {
 	if store == nil {
 		return nil, errors.New("empty event store config")
 	}

@@ -19,7 +19,7 @@ type Event interface {
 // its the representation how data is store in event store
 type Model struct {
 	ID        string
-	Version   int
+	Version   int64
 	State     string
 	Content   interface{}
 	CreatedAt time.Time

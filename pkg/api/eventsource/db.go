@@ -23,7 +23,7 @@ type Article struct {
 
 type EventStore interface {
 	Apply(ctx context.Context, e events.Event) error
-	LatestVersion(ctx context.Context, aggregateId string) (int, error)
+	LatestVersion(ctx context.Context, aggregateId string) (int64, error)
 	Load(ctx context.Context, aggregateId string) ([]events.Event, error)
 }
 
@@ -62,7 +62,7 @@ func (c *Config) Apply(ctx context.Context, e events.Event) error {
 		return errors.New("invalid event")
 	}
 
-	query, err := c.Conn.Prepare("INSERT INTO events_store(id,version,state,data) values(?,?,?,?)")
+	query, err := c.Conn.Prepare("INSERT INTO events_store(resourceID,version,state,content) values(?,?,?,?)")
 	if err != nil {
 		return err
 	}

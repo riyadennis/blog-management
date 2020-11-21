@@ -3,6 +3,7 @@ package create
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -10,15 +11,17 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
-func ArticleEvent(store eventsource.EventStore, refID string, r *http.Request) error {
+func Command(store eventsource.EventStore, refID string, r *http.Request) error {
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Printf("failed to read request body %v", err)
 		return err
 	}
 
 	a := &eventsource.Article{}
 	err = json.Unmarshal(d, a)
 	if err != nil {
+		log.Printf("failed to unmarshal request body %v", err)
 		return err
 	}
 
@@ -26,6 +29,7 @@ func ArticleEvent(store eventsource.EventStore, refID string, r *http.Request) e
 
 	eventHistory, err := store.LatestVersion(ctx, refID)
 	if err != nil {
+		log.Printf("failed to check version number %v", err)
 		return err
 	}
 
@@ -37,6 +41,7 @@ func ArticleEvent(store eventsource.EventStore, refID string, r *http.Request) e
 		CreatedAt: time.Now(),
 	})
 	if err != nil {
+		log.Printf("failed to save data to db %v", err)
 		return err
 	}
 

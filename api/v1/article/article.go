@@ -23,14 +23,16 @@ func (ah *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp []byte
 	switch r.Method {
 	case http.MethodPost:
-		err := create.ArticleEvent(ah.store, ah.resourceID, r)
+		err := create.Command(ah.store, ah.resourceID, r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			resp = []byte("success")
+			resp = []byte(err.Error())
 			return
 		}
+	case http.MethodPatch:
+
 	case http.MethodGet:
-		event, err := get.Aggregate(r.Context(), ah.store, ah.resourceID)
+		event, err := get.Query(r.Context(), ah.store, ah.resourceID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(err.Error()))
@@ -43,7 +45,6 @@ func (ah *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Write(resp)
 			return
 		}
-
 		resp = event
 	}
 
