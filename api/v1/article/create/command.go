@@ -24,16 +24,14 @@ func ArticleEvent(store eventsource.EventStore, refID string, r *http.Request) e
 
 	ctx := r.Context()
 
-	eventHistory, err := store.Load(ctx, refID)
+	eventHistory, err := store.LatestVersion(ctx, refID)
 	if err != nil {
 		return err
 	}
 
 	err = store.Apply(ctx, &events.Model{
-		ID: refID,
-		// TODO find a way to do auto increment in db
-		// this can become a resource consuming process
-		Version:   eventVersion(eventHistory),
+		ID:        refID,
+		Version:   eventHistory + 1,
 		State:     events.StatusCreated,
 		Content:   a,
 		CreatedAt: time.Now(),
@@ -43,21 +41,4 @@ func ArticleEvent(store eventsource.EventStore, refID string, r *http.Request) e
 	}
 
 	return nil
-}
-
-func eventVersion(eventHistory []events.Event) int {
-	if eventHistory == nil {
-		return 1
-	}
-	var latestVersion int
-	for _, e := range eventHistory {
-		if e == nil {
-			continue
-		}
-		m := e.(*events.Model)
-		if m.Version > latestVersion {
-			latestVersion = m.Version
-		}
-	}
-	return latestVersion + 1
 }

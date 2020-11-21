@@ -33,6 +33,9 @@ func (a *APIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch resourceName {
 	case "article":
 		article.NewHandler(a.eventStore, resourceParam).ServeHTTP(w, r)
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("invalid URL"))
 	}
 }
 
