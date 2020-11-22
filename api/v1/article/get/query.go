@@ -42,7 +42,7 @@ func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]b
 
 func aggregate(ev []events.Event, v int64) (*events.Model, error) {
 	eventLatest := &events.Model{}
-	var err error
+
 	eventLatest.Version = v
 
 	for i, e := range ev {
@@ -55,10 +55,12 @@ func aggregate(ev []events.Event, v int64) (*events.Model, error) {
 		}
 
 		if m.Content == "null" {
-			err = recursive(eventLatest, i, ev)
-			if err != nil {
-				return nil, errors.New("failed to aggregate content")
+			m1, ok := ev[i+1].(*events.Model)
+			if !ok {
+				return nil, errors.New("invalid event found in history")
 			}
+
+			eventLatest.Content = m1.Content
 		}
 	}
 
@@ -70,12 +72,8 @@ func recursive(e *events.Model, count int, es []events.Event) error {
 	if !ok {
 		return errors.New("invalid event found in history")
 	}
-	if m.Content == nil {
-		err := recursive(m, count+1, es)
-		if err != nil {
-			return err
-		}
-	}
+
 	e.Content = m.Content
+
 	return nil
 }
