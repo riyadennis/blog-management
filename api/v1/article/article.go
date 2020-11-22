@@ -1,9 +1,11 @@
 package article
 
 import (
-	"github.com/riyadennis/blog-management/api/v1/article/create"
 	"github.com/riyadennis/blog-management/api/v1/article/get"
+	"github.com/riyadennis/blog-management/api/v1/article/patch"
+	"github.com/riyadennis/blog-management/api/v1/article/post"
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
+
 	"net/http"
 )
 
@@ -23,14 +25,19 @@ func (ah *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp []byte
 	switch r.Method {
 	case http.MethodPost:
-		err := create.Command(ah.store, ah.resourceID, r)
+		err := post.Command(ah.store, ah.resourceID, r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			resp = []byte(err.Error())
 			return
 		}
 	case http.MethodPatch:
-
+		err := patch.ChangeStatus(ah.store, r)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			resp = []byte(err.Error())
+			return
+		}
 	case http.MethodGet:
 		event, err := get.Query(r.Context(), ah.store, ah.resourceID)
 		if err != nil {

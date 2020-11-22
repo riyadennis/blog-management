@@ -1,4 +1,4 @@
-package create
+package post
 
 import (
 	"encoding/json"
@@ -27,7 +27,7 @@ func Command(store eventsource.EventStore, refID string, r *http.Request) error 
 
 	ctx := r.Context()
 
-	eventHistory, err := store.LatestVersion(ctx, refID)
+	version, err := store.LatestVersion(ctx, refID)
 	if err != nil {
 		log.Printf("failed to check version number %v", err)
 		return err
@@ -35,7 +35,7 @@ func Command(store eventsource.EventStore, refID string, r *http.Request) error 
 
 	err = store.Apply(ctx, &events.Model{
 		ID:        refID,
-		Version:   eventHistory + 1,
+		Version:   version + 1,
 		State:     events.StatusCreated,
 		Content:   a,
 		CreatedAt: time.Now(),

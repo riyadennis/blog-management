@@ -21,6 +21,7 @@ func (c *Config) LatestVersion(ctx context.Context, aggregateID string) (int64, 
 	if err != nil {
 		return 0, err
 	}
+
 	if version == nil {
 		return 0, nil
 	}
