@@ -23,16 +23,9 @@ func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]b
 		return nil, err
 	}
 
-	var eventLatest *events.Model
-	for _, e := range refIDEvents {
-		m, ok := e.(*events.Model)
-		if !ok {
-			return nil, errors.New("invalid event found in history")
-		}
-		//TODO append fields also to create an aggregate
-		if m.Version == latest {
-			eventLatest = m
-		}
+	eventLatest, err := aggregate(refIDEvents, latest)
+	if err != nil {
+		return nil, err
 	}
 
 	if eventLatest.Content == nil {
@@ -45,4 +38,44 @@ func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]b
 	}
 
 	return data, nil
+}
+
+func aggregate(ev []events.Event, v int64) (*events.Model, error) {
+	eventLatest := &events.Model{}
+	var err error
+	eventLatest.Version = v
+
+	for i, e := range ev {
+		m, ok := e.(*events.Model)
+		if !ok {
+			return nil, errors.New("invalid event found in history")
+		}
+		if m.Version == v {
+			eventLatest = m
+		}
+
+		if m.Content == "null" {
+			err = recursive(eventLatest, i, ev)
+			if err != nil {
+				return nil, errors.New("failed to aggregate content")
+			}
+		}
+	}
+
+	return eventLatest, nil
+}
+
+func recursive(e *events.Model, count int, es []events.Event) error {
+	m, ok := es[count+1].(*events.Model)
+	if !ok {
+		return errors.New("invalid event found in history")
+	}
+	if m.Content == nil {
+		err := recursive(m, count+1, es)
+		if err != nil {
+			return err
+		}
+	}
+	e.Content = m.Content
+	return nil
 }

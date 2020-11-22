@@ -39,7 +39,7 @@ func (c *Config) Load(ctx context.Context, aggregateID string) ([]events.Event, 
 
 	rows, err := c.Conn.QueryContext(
 		ctx,
-		"SELECT version,state,data,created_at FROM events_store WHERE resourceID=?",
+		"SELECT version,state,content,created_at FROM events_store WHERE resourceID=? ORDER BY created_at DESC",
 		aggregateID,
 	)
 	if err != nil {
