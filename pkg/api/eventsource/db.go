@@ -61,12 +61,12 @@ func (c *Config) Apply(ctx context.Context, e events.Event) error {
 		return errors.New("invalid event")
 	}
 
-	query, err := c.Conn.Prepare("INSERT INTO events_store(resourceID,version,state,content) values(?,?,?,?)")
+	query, err := c.Conn.Prepare("INSERT INTO events_store(resourceID,version,state,content,aggregate) values(?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, model.Content)
+	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, model.Content, model.Aggregate)
 	if err != nil {
 		return err
 	}

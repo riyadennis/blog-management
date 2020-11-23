@@ -22,6 +22,7 @@ type Model struct {
 	Version   int64
 	State     string
 	Content   string
+	Aggregate bool
 	CreatedAt time.Time
 }
 

@@ -44,6 +44,7 @@ func Command(store eventsource.EventStore, refID string, r *http.Request) error 
 		Version:   version + 1,
 		State:     events.StatusCreated,
 		Content:   string(article),
+		Aggregate: false,
 		CreatedAt: time.Now(),
 	})
 	if err != nil {

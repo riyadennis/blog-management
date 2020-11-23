@@ -7,15 +7,15 @@ import (
 	"time"
 )
 
-func (c *Config) LatestVersion(ctx context.Context, aggregateID string) (int64, error) {
+func (c *Config) LatestVersion(ctx context.Context, resourceID string) (int64, error) {
 	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
 	defer cancel()
 
-	if aggregateID == "" {
+	if resourceID == "" {
 		return 0, errors.New("empty aggregate id")
 	}
 	var version interface{}
-	row := c.Conn.QueryRowContext(ctx, "SELECT MAX(version) as version FROM events_store WHERE resourceID=?", aggregateID)
+	row := c.Conn.QueryRowContext(ctx, "SELECT MAX(version) as version FROM events_store WHERE resourceID=?", resourceID)
 
 	err := row.Scan(&version)
 	if err != nil {

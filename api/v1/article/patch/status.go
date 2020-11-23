@@ -2,6 +2,7 @@ package patch
 
 import (
 	"errors"
+	"github.com/riyadennis/blog-management/api/v1/article/get"
 	"github.com/riyadennis/blog-management/pkg/api/events"
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 	"log"
@@ -33,11 +34,18 @@ func ChangeStatus(store eventsource.EventStore, r *http.Request) error {
 		return err
 	}
 
+	content, err := get.Query(ctx, store, refID)
+	if err != nil {
+		log.Printf("failed to run query %v", err)
+		return err
+	}
+
 	err = store.Apply(ctx, &events.Model{
 		ID:        refID,
 		Version:   version + 1,
 		State:     status,
-		Content:   "",
+		Content:   string(content),
+		Aggregate: true,
 		CreatedAt: time.Now(),
 	})
 
