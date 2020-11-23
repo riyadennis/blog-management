@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+// ChangeStatus adds a new event into the store with a meta data change for the event
+// in this case meta data is the status of the blog.
+// I am saving aggregated record into store
+// this saved aggregate can be used while querying.
 func ChangeStatus(store eventsource.EventStore, r *http.Request) error {
 	path := strings.Split(r.URL.Path, "/")
 	ctx := r.Context()

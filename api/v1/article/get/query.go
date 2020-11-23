@@ -8,6 +8,7 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
+// Query will fetch current projection of the resource based on events in the store.
 func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]byte, error) {
 	if store == nil {
 		return nil, errors.New("empty event store config")
@@ -40,6 +41,10 @@ func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]b
 	return data, nil
 }
 
+// aggregate is a simple function which goes through all ordered articles
+// and add latest fields to one article object.
+// this can be done using aggregateID or flag as well which will be more performant.
+// this is a simple approach.
 func aggregate(articles []*eventsource.Article) (*eventsource.Article, error) {
 	article := &eventsource.Article{}
 
@@ -65,6 +70,8 @@ func aggregate(articles []*eventsource.Article) (*eventsource.Article, error) {
 	return article, nil
 }
 
+// allArticles fetches non empty content from all the events in the store
+// articles are fetched in the order of creation.
 func allArticles(ev []events.Event) ([]*eventsource.Article, error) {
 	ar := make([]*eventsource.Article, len(ev))
 

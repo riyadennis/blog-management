@@ -45,16 +45,3 @@ func (a *Model) AggregateID() string {
 func (a *Model) At() time.Time {
 	return a.CreatedAt
 }
-
-func AssignEvent(a *Model) Event {
-	switch a.State {
-	case StatusCreated:
-		return &EventCreated{Model: a}
-	case StatusPublished:
-		return &EventPublished{Model: a}
-	case StatusArchived:
-		return &EventArchived{Model: a}
-	default:
-		return nil
-	}
-}

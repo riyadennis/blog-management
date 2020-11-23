@@ -33,6 +33,7 @@ func Command(store eventsource.EventStore, refID string, r *http.Request) error 
 		return err
 	}
 
+	// this is to validate and clean content
 	article, err := json.Marshal(a)
 	if err != nil {
 		log.Printf("failed to marshal %v", err)
