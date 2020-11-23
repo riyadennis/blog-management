@@ -21,25 +21,25 @@ func NewHandler(store eventsource.EventStore, resourceID string) *Handler {
 	}
 }
 
-func (ah *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp []byte
 	switch r.Method {
 	case http.MethodPost:
-		err := post.Command(ah.store, ah.resourceID, r)
+		err := post.Command(h.store, h.resourceID, r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			resp = []byte(err.Error())
 			return
 		}
 	case http.MethodPatch:
-		err := patch.ChangeStatus(ah.store, r)
+		err := patch.ChangeStatus(h.store, r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			resp = []byte(err.Error())
 			return
 		}
 	case http.MethodGet:
-		event, err := get.Query(r.Context(), ah.store, ah.resourceID)
+		event, err := get.Query(r.Context(), h.store, h.resourceID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(err.Error()))
