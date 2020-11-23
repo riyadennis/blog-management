@@ -37,7 +37,7 @@ func ChangeStatus(store eventsource.EventStore, r *http.Request) error {
 		ID:        refID,
 		Version:   version + 1,
 		State:     status,
-		Content:   nil,
+		Content:   "",
 		CreatedAt: time.Now(),
 	})
 

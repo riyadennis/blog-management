@@ -21,7 +21,7 @@ type Model struct {
 	ID        string
 	Version   int64
 	State     string
-	Content   interface{}
+	Content   string
 	CreatedAt time.Time
 }
 

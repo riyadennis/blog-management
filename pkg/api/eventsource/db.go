@@ -3,7 +3,6 @@ package eventsource
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/riyadennis/blog-management/pkg/api/events"
@@ -15,10 +14,10 @@ const TimeOut = 5
 
 // Article holds structure of the blob in Article event
 type Article struct {
-	Author       string
-	Heading      string
-	Introduction string
-	Body         string
+	Author       string `json:"author"`
+	Heading      string `json:"heading"`
+	Introduction string `json:"introduction"`
+	Body         string `json:"body"`
 }
 
 type EventStore interface {
@@ -67,12 +66,7 @@ func (c *Config) Apply(ctx context.Context, e events.Event) error {
 		return err
 	}
 
-	ac, err := json.Marshal(model.Content)
-	if err != nil {
-		return err
-	}
-
-	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, string(ac))
+	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, model.Content)
 	if err != nil {
 		return err
 	}

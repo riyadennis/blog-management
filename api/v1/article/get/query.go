@@ -13,26 +13,26 @@ func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]b
 		return nil, errors.New("empty event store config")
 	}
 
-	latest, err := store.LatestVersion(ctx, refID)
-	if err != nil {
-		return nil, err
-	}
-
 	refIDEvents, err := store.Load(ctx, refID)
 	if err != nil {
 		return nil, err
 	}
 
-	eventLatest, err := aggregate(refIDEvents, latest)
+	articles, err := allArticles(refIDEvents)
 	if err != nil {
 		return nil, err
 	}
 
-	if eventLatest.Content == nil {
-		return nil, errors.New("empty content")
+	if articles == nil {
+		return nil, errors.New("no content in the history")
 	}
 
-	data, err := json.Marshal(eventLatest.Content)
+	article, err := aggregate(articles)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(article)
 	if err != nil {
 		return nil, err
 	}
@@ -40,40 +40,51 @@ func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]b
 	return data, nil
 }
 
-func aggregate(ev []events.Event, v int64) (*events.Model, error) {
-	eventLatest := &events.Model{}
+func aggregate(articles []*eventsource.Article) (*eventsource.Article, error) {
+	article := &eventsource.Article{}
 
-	eventLatest.Version = v
+	for _, a := range articles {
+		if a == nil {
+			continue
+		}
+
+		if a.Introduction != "" && article.Introduction == "" {
+			article.Introduction = a.Introduction
+		}
+		if a.Heading != "" && article.Heading == "" {
+			article.Heading = a.Heading
+		}
+		if a.Body != "" && article.Body == "" {
+			article.Body = a.Body
+		}
+		if a.Author != "" && article.Author == "" {
+			article.Author = a.Author
+		}
+	}
+
+	return article, nil
+}
+
+func allArticles(ev []events.Event) ([]*eventsource.Article, error) {
+	ar := make([]*eventsource.Article, len(ev))
 
 	for i, e := range ev {
 		m, ok := e.(*events.Model)
 		if !ok {
 			return nil, errors.New("invalid event found in history")
 		}
-		if m.Version == v {
-			eventLatest = m
-		}
 
 		if m.Content == "null" {
-			m1, ok := ev[i+1].(*events.Model)
-			if !ok {
-				return nil, errors.New("invalid event found in history")
-			}
+			continue
+		}
+		ar[i] = &eventsource.Article{}
+		str := m.Content
 
-			eventLatest.Content = m1.Content
+		err := json.Unmarshal([]byte(str), ar[i])
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	return eventLatest, nil
-}
-
-func recursive(e *events.Model, count int, es []events.Event) error {
-	m, ok := es[count+1].(*events.Model)
-	if !ok {
-		return errors.New("invalid event found in history")
-	}
-
-	e.Content = m.Content
-
-	return nil
+	return ar, nil
 }

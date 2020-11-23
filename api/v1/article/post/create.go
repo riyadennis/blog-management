@@ -33,11 +33,17 @@ func Command(store eventsource.EventStore, refID string, r *http.Request) error 
 		return err
 	}
 
+	article, err := json.Marshal(a)
+	if err != nil {
+		log.Printf("failed to marshal %v", err)
+		return err
+	}
+
 	err = store.Apply(ctx, &events.Model{
 		ID:        refID,
 		Version:   version + 1,
 		State:     events.StatusCreated,
-		Content:   a,
+		Content:   string(article),
 		CreatedAt: time.Now(),
 	})
 	if err != nil {
