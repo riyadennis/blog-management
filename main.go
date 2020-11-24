@@ -24,10 +24,12 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	eventsource.Set(eventStore)
 }
 
 func main() {
-	err = http.ListenAndServe(":8080", api.NewAPIv1(eventStore))
+	err = http.ListenAndServe(":8080", api.NewAPIv1())
 	if err != nil {
 		log.Fatal(err)
 	}

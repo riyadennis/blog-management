@@ -15,7 +15,7 @@ import (
 // in this case meta data is the status of the blog.
 // I am saving aggregated record into store
 // this saved aggregate can be used while querying.
-func ChangeStatus(store eventsource.EventStore, r *http.Request) error {
+func ChangeStatus( r *http.Request) error {
 	path := strings.Split(r.URL.Path, "/")
 	ctx := r.Context()
 	refID := path[len(path)-3]
@@ -32,13 +32,14 @@ func ChangeStatus(store eventsource.EventStore, r *http.Request) error {
 		return errors.New("invalid status")
 	}
 
+	store := eventsource.Get()
 	version, err := store.LatestVersion(ctx, refID)
 	if err != nil {
 		log.Printf("failed to check version number %v", err)
 		return err
 	}
 
-	content, err := get.Query(ctx, store, refID)
+	content, err := get.Query(ctx, refID)
 	if err != nil {
 		log.Printf("failed to run query %v", err)
 		return err
