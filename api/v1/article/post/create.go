@@ -42,12 +42,12 @@ func Command(refID string, r *http.Request) error {
 	}
 
 	err = store.Apply(ctx, &events.Model{
-		ID:        refID,
-		Version:   version + 1,
-		State:     events.StatusCreated,
-		Content:   string(article),
-		Aggregate: false,
-		CreatedAt: time.Now(),
+		ID:          refID,
+		Version:     version + 1,
+		State:       events.StatusCreated,
+		Content:     string(article),
+		AggregateID: "",
+		CreatedAt:   time.Now(),
 	})
 	if err != nil {
 		log.Printf("failed to save data to db %v", err)

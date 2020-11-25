@@ -11,19 +11,19 @@ const (
 )
 
 type Event interface {
-	AggregateID() string
+	Aggregate() string
 	At() time.Time
 }
 
 //Model is the bounded context to hold versions of article data
 // its the representation how data is store in event store
 type Model struct {
-	ID        string
-	Version   int64
-	State     string
-	Content   string
-	Aggregate bool
-	CreatedAt time.Time
+	ID          string
+	Version     int64
+	State       string
+	Content     string
+	AggregateID string
+	CreatedAt   time.Time
 }
 
 type EventCreated struct {
@@ -38,8 +38,8 @@ type EventArchived struct {
 	*Model
 }
 
-func (a *Model) AggregateID() string {
-	return a.ID
+func (a *Model) Aggregate() string {
+	return a.AggregateID
 }
 
 func (a *Model) At() time.Time {

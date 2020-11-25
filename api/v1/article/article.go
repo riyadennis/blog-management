@@ -28,14 +28,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case http.MethodPatch:
-		err := patch.ChangeStatus(r)
+		id, err := patch.ChangeStatus(r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			resp = []byte(err.Error())
 			return
 		}
+		w.Header().Set("Etag", id)
 	case http.MethodGet:
-		event, err := get.Query(r.Context(), h.resourceID)
+		event, err := get.Query(r, h.resourceID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(err.Error()))

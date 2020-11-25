@@ -4,12 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
+
 	"github.com/riyadennis/blog-management/pkg/api/events"
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
 // Query will fetch current projection of the resource based on events in the store.
-func Query(ctx context.Context, refID string) ([]byte, error) {
+func Query(r *http.Request, refID string) ([]byte, error) {
+	ctx := r.Context()
+	store := eventsource.Get()
+	if r.Header.Get("If-None-Match") != "" {
+		return store.Aggregate(ctx, r.Header.Get("If-None-Match"))
+	}
+
 	return Article(ctx, refID)
 }
 
