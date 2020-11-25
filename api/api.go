@@ -7,16 +7,14 @@ import (
 
 	"github.com/riyadennis/blog-management/api/v1/article"
 	"github.com/riyadennis/blog-management/pkg/api"
-	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
 type APIv1 struct {
-	eventStore eventsource.EventStore
 	article    *article.Handler
 }
 
-func NewAPIv1(e eventsource.EventStore) *APIv1 {
-	return &APIv1{eventStore: e}
+func NewAPIv1() *APIv1 {
+	return &APIv1{}
 }
 
 func (a *APIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +30,7 @@ func (a *APIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch resourceName {
 	case "article":
-		article.NewHandler(a.eventStore, resourceParam).ServeHTTP(w, r)
+		article.NewHandler(resourceParam).ServeHTTP(w, r)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("invalid URL"))

@@ -11,7 +11,7 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
-func Command(store eventsource.EventStore, refID string, r *http.Request) error {
+func Command(refID string, r *http.Request) error {
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("failed to read request body %v", err)
@@ -27,6 +27,7 @@ func Command(store eventsource.EventStore, refID string, r *http.Request) error 
 
 	ctx := r.Context()
 
+	store := eventsource.Get()
 	version, err := store.LatestVersion(ctx, refID)
 	if err != nil {
 		log.Printf("failed to check version number %v", err)

@@ -9,11 +9,12 @@ import (
 )
 
 // Query will fetch current projection of the resource based on events in the store.
-func Query(ctx context.Context, store eventsource.EventStore, refID string) ([]byte, error) {
-	if store == nil {
-		return nil, errors.New("empty event store config")
-	}
+func Query(ctx context.Context, refID string) ([]byte, error) {
+	return Article(ctx, refID)
+}
 
+func Article(ctx context.Context, refID string) ([]byte, error) {
+	store := eventsource.Get()
 	refIDEvents, err := store.Load(ctx, refID)
 	if err != nil {
 		return nil, err

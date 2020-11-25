@@ -14,11 +14,12 @@ const TimeOut = 5
 
 // Article holds structure of the blob in Article event
 type Article struct {
-	Author       string `json:"author"`
-	Heading      string `json:"heading"`
-	Introduction string `json:"introduction"`
-	Body         string `json:"body"`
+	Author       string `json:"author,omitempty"`
+	Heading      string `json:"heading,omitempty"`
+	Introduction string `json:"introduction,omitempty"`
+	Body         string `json:"body,omitempty"`
 }
+var config EventStore
 
 type EventStore interface {
 	Apply(ctx context.Context, e events.Event) error
@@ -28,6 +29,14 @@ type EventStore interface {
 
 type Config struct {
 	Conn *sql.DB
+}
+
+func Set(c EventStore){
+	config = c
+}
+
+func Get()EventStore{
+	return config
 }
 
 func NewConn() (*Config, error) {
