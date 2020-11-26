@@ -3,8 +3,9 @@ package eventsource
 import (
 	"context"
 	"errors"
-	"github.com/riyadennis/blog-management/pkg/api/events"
 	"time"
+
+	"github.com/riyadennis/blog-management/pkg/api/events"
 )
 
 func (c *Config) LatestVersion(ctx context.Context, resourceID string) (int64, error) {

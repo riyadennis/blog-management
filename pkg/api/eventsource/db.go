@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/riyadennis/blog-management/pkg/api/events"
 	"os"
 	"time"
+
+	"github.com/riyadennis/blog-management/pkg/api/events"
 )
 
 const TimeOut = 5
@@ -19,11 +20,13 @@ type Article struct {
 	Introduction string `json:"introduction,omitempty"`
 	Body         string `json:"body,omitempty"`
 }
+
 var config EventStore
 
 type EventStore interface {
 	Apply(ctx context.Context, e events.Event) error
 	LatestVersion(ctx context.Context, aggregateId string) (int64, error)
+	Aggregate(ctx context.Context, aggregateID string) ([]byte, error)
 	Load(ctx context.Context, aggregateId string) ([]events.Event, error)
 }
 
@@ -31,11 +34,11 @@ type Config struct {
 	Conn *sql.DB
 }
 
-func Set(c EventStore){
+func Set(c EventStore) {
 	config = c
 }
 
-func Get()EventStore{
+func Get() EventStore {
 	return config
 }
 
@@ -70,12 +73,12 @@ func (c *Config) Apply(ctx context.Context, e events.Event) error {
 		return errors.New("invalid event")
 	}
 
-	query, err := c.Conn.Prepare("INSERT INTO events_store(resourceID,version,state,content,aggregate) values(?,?,?,?,?)")
+	query, err := c.Conn.Prepare("INSERT INTO events_store(resourceID,version,state,content,aggregateID) values(?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, model.Content, model.Aggregate)
+	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, model.Content, model.AggregateID)
 	if err != nil {
 		return err
 	}

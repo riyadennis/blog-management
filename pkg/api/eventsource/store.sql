@@ -1,5 +1,6 @@
 CREATE table events_store(
     resourceID VARCHAR(36),
+    aggregate bool,
     version int,
     state VARCHAR(50) NOT NULL,
     Content blob,
