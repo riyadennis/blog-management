@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/riyadennis/blog-management/pkg/api/events"
 	"os"
 	"time"
+
+	"github.com/riyadennis/blog-management/pkg/api/events"
 )
 
 const TimeOut = 5

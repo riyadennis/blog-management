@@ -1,10 +1,11 @@
 package article
 
 import (
+	"net/http"
+
 	"github.com/riyadennis/blog-management/api/v1/article/get"
 	"github.com/riyadennis/blog-management/api/v1/article/patch"
 	"github.com/riyadennis/blog-management/api/v1/article/post"
-	"net/http"
 )
 
 type Handler struct {

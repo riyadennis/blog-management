@@ -10,7 +10,7 @@ import (
 )
 
 type APIv1 struct {
-	article    *article.Handler
+	article *article.Handler
 }
 
 func NewAPIv1() *APIv1 {
