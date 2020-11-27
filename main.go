@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+
 	"github.com/riyadennis/blog-management/api"
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )

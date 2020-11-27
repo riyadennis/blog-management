@@ -23,8 +23,7 @@ func (a *APIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	resourceName, resourceParam, err := resource(p)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -32,8 +31,7 @@ func (a *APIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "article":
 		article.NewHandler(resourceParam).ServeHTTP(w, r)
 	default:
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("invalid URL"))
+		http.Error(w, "invalid URL", http.StatusBadRequest)
 	}
 }
 

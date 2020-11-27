@@ -24,30 +24,25 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		err := post.Command(h.resourceID, r)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			resp = []byte(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	case http.MethodPatch:
 		id, err := patch.ChangeStatus(r)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			resp = []byte(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		w.Header().Set("Etag", id)
 	case http.MethodGet:
 		event, err := get.Query(r, h.resourceID)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(err.Error()))
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if event == nil {
-			w.WriteHeader(http.StatusBadRequest)
-			resp = []byte("no event found for provided resource ID")
-			w.Write(resp)
+			http.Error(w, "no event found for provided resource ID", http.StatusBadRequest)
 			return
 		}
 		resp = event
