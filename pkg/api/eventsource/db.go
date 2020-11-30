@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/riyadennis/blog-management/pkg/api/events"
@@ -21,7 +22,10 @@ type Article struct {
 	Body         string `json:"body,omitempty"`
 }
 
-var config EventStore
+var (
+	config EventStore
+	once   sync.Once
+)
 
 type EventStore interface {
 	Apply(ctx context.Context, e events.Event) error
@@ -35,7 +39,9 @@ type Config struct {
 }
 
 func Set(c EventStore) {
-	config = c
+	once.Do(func() {
+		config = c
+	})
 }
 
 func Get() EventStore {
