@@ -28,7 +28,7 @@ func (a *APIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch resourceName {
-	case "article":
+	case "articles":
 		article.NewHandler(resourceParam).ServeHTTP(w, r)
 	default:
 		http.Error(w, "invalid URL", http.StatusBadRequest)

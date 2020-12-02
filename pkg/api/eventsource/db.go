@@ -32,6 +32,7 @@ type EventStore interface {
 	LatestVersion(ctx context.Context, aggregateId string) (int64, error)
 	Aggregate(ctx context.Context, aggregateID string) ([]byte, error)
 	Load(ctx context.Context, aggregateId string) ([]events.Event, error)
+	Events(ctx context.Context) ([]*Article, error)
 }
 
 type Config struct {

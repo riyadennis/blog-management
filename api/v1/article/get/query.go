@@ -14,15 +14,27 @@ import (
 func Query(r *http.Request, refID string) ([]byte, error) {
 	ctx := r.Context()
 	store := eventsource.Get()
+	if refID == "" {
+		return Articles(ctx, store)
+	}
+
 	if r.Header.Get("If-None-Match") != "" {
 		return store.Aggregate(ctx, r.Header.Get("If-None-Match"))
 	}
 
-	return Article(ctx, refID)
+	return Article(ctx, store, refID)
 }
 
-func Article(ctx context.Context, refID string) ([]byte, error) {
-	store := eventsource.Get()
+func Articles(ctx context.Context, store eventsource.EventStore) ([]byte, error) {
+	articles, err := store.Events(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(articles)
+}
+
+func Article(ctx context.Context, store eventsource.EventStore, refID string) ([]byte, error) {
 	refIDEvents, err := store.Load(ctx, refID)
 	if err != nil {
 		return nil, err
