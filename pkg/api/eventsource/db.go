@@ -27,12 +27,20 @@ var (
 	once   sync.Once
 )
 
-type EventStore interface {
+type Command interface {
 	Apply(ctx context.Context, e events.Event) error
-	LatestVersion(ctx context.Context, aggregateId string) (int64, error)
 	Aggregate(ctx context.Context, aggregateID string) ([]byte, error)
+}
+
+type Query interface {
+	LatestVersion(ctx context.Context, aggregateId string) (int64, error)
 	Load(ctx context.Context, aggregateId string) ([]events.Event, error)
 	Events(ctx context.Context) ([]*Article, error)
+}
+
+type EventStore interface {
+	Command
+	Query
 }
 
 type Config struct {

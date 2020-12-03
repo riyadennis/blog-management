@@ -25,7 +25,7 @@ func Query(r *http.Request, refID string) ([]byte, error) {
 	return Article(ctx, store, refID)
 }
 
-func Articles(ctx context.Context, store eventsource.EventStore) ([]byte, error) {
+func Articles(ctx context.Context, store eventsource.Query) ([]byte, error) {
 	articles, err := store.Events(ctx)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func Articles(ctx context.Context, store eventsource.EventStore) ([]byte, error)
 	return json.Marshal(articles)
 }
 
-func Article(ctx context.Context, store eventsource.EventStore, refID string) ([]byte, error) {
+func Article(ctx context.Context, store eventsource.Query, refID string) ([]byte, error) {
 	refIDEvents, err := store.Load(ctx, refID)
 	if err != nil {
 		return nil, err
