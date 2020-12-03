@@ -8,28 +8,6 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api/events"
 )
 
-func (c *Config) LatestVersion(ctx context.Context, resourceID string) (int64, error) {
-	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
-	defer cancel()
-
-	if resourceID == "" {
-		return 0, errors.New("empty aggregate id")
-	}
-	var version interface{}
-	row := c.Conn.QueryRowContext(ctx, "SELECT MAX(version) as version FROM events_store WHERE resourceID=?", resourceID)
-
-	err := row.Scan(&version)
-	if err != nil {
-		return 0, err
-	}
-
-	if version == nil {
-		return 0, nil
-	}
-
-	return version.(int64), nil
-}
-
 func (c *Config) Load(ctx context.Context, aggregateID string) ([]events.Event, error) {
 	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
 	defer cancel()

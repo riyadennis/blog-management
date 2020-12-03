@@ -28,11 +28,6 @@ func Command(refID string, r *http.Request) error {
 	ctx := r.Context()
 
 	store := eventsource.Get()
-	version, err := store.LatestVersion(ctx, refID)
-	if err != nil {
-		log.Printf("failed to check version number %v", err)
-		return err
-	}
 
 	// this is to validate and clean content
 	article, err := json.Marshal(a)
@@ -43,7 +38,6 @@ func Command(refID string, r *http.Request) error {
 
 	err = store.Apply(ctx, &events.Model{
 		ID:          refID,
-		Version:     version + 1,
 		State:       events.StatusCreated,
 		Content:     string(article),
 		AggregateID: "",

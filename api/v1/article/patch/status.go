@@ -36,11 +36,6 @@ func ChangeStatus(r *http.Request) (string, error) {
 	}
 
 	store := eventsource.Get()
-	version, err := store.LatestVersion(ctx, refID)
-	if err != nil {
-		log.Printf("failed to check version number %v", err)
-		return "", err
-	}
 
 	content, err := get.Query(r, refID)
 	if err != nil {
@@ -57,7 +52,6 @@ func ChangeStatus(r *http.Request) (string, error) {
 
 	err = store.Apply(ctx, &events.Model{
 		ID:          refID,
-		Version:     version + 1,
 		State:       status,
 		Content:     string(content),
 		AggregateID: aggregateID,

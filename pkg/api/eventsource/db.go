@@ -33,7 +33,6 @@ type Command interface {
 }
 
 type Query interface {
-	LatestVersion(ctx context.Context, aggregateId string) (int64, error)
 	Load(ctx context.Context, aggregateId string) ([]events.Event, error)
 	Events(ctx context.Context) ([]*Article, error)
 }
@@ -87,16 +86,43 @@ func (c *Config) Apply(ctx context.Context, e events.Event) error {
 	if !ok {
 		return errors.New("invalid event")
 	}
+	version, err := latestVersion(ctx, c.Conn, model.ID)
+	if err != nil {
+		return err
+	}
 
 	query, err := c.Conn.Prepare("INSERT INTO events_store(resourceID,version,state,content,aggregateID) values(?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = query.ExecContext(ctx, model.ID, model.Version, model.State, model.Content, model.AggregateID)
+	_, err = query.ExecContext(ctx, model.ID, version+1, model.State, model.Content, model.AggregateID)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func latestVersion(ctx context.Context, conn *sql.DB, resourceID string) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
+	defer cancel()
+
+	if resourceID == "" {
+		return 0, errors.New("empty aggregate id")
+	}
+
+	var version interface{}
+	row := conn.QueryRowContext(ctx, "SELECT MAX(version) as version FROM events_store WHERE resourceID=?", resourceID)
+
+	err := row.Scan(&version)
+	if err != nil {
+		return 0, err
+	}
+
+	if version == nil {
+		return 0, nil
+	}
+
+	return version.(int64), nil
 }
