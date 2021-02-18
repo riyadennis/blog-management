@@ -8,8 +8,9 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api/events"
 )
 
+// Load fetches all the events from db as per the aggregate ID
 func (c *Config) Load(ctx context.Context, aggregateID string) ([]events.Event, error) {
-	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, TimeOut)
 	defer cancel()
 
 	if aggregateID == "" {

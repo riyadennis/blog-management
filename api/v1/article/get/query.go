@@ -25,6 +25,7 @@ func Query(r *http.Request, refID string) ([]byte, error) {
 	return Article(ctx, store, refID)
 }
 
+// Articles fetches all the articles from database
 func Articles(ctx context.Context, store eventsource.Query) ([]byte, error) {
 	articles, err := store.Events(ctx)
 	if err != nil {
@@ -34,6 +35,7 @@ func Articles(ctx context.Context, store eventsource.Query) ([]byte, error) {
 	return json.Marshal(articles)
 }
 
+// Article fetche one article as per the refID
 func Article(ctx context.Context, store eventsource.Query, refID string) ([]byte, error) {
 	refIDEvents, err := store.Load(ctx, refID)
 	if err != nil {

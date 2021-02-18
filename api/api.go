@@ -9,14 +9,17 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api"
 )
 
+// APIv1 holds resources needed for v1 API
 type APIv1 struct {
 	article *article.Handler
 }
 
+// NewAPIv1 creates v1 API struct
 func NewAPIv1() *APIv1 {
 	return &APIv1{}
 }
 
+// ServeHTTP is the root handler for API v1
 func (a *APIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.Path
 	w.Header().Set("Content-Type", "application/json")

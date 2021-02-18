@@ -11,6 +11,7 @@ import (
 	"github.com/riyadennis/blog-management/pkg/api/eventsource"
 )
 
+// Command creates a new version of the resource for the specified ref id.
 func Command(refID string, r *http.Request) error {
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {

@@ -3,11 +3,12 @@ package eventsource
 import (
 	"context"
 	"errors"
-	"time"
 )
 
+// Aggregate runs through all the versions of the event and create an aggregate
+// version of the event for quick fetching.
 func (c *Config) Aggregate(ctx context.Context, aggregateID string) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, TimeOut)
 	defer cancel()
 
 	if aggregateID == "" {

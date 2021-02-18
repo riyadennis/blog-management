@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"time"
 )
 
+// Events extracts articles from each stored event
 func (c *Config) Events(ctx context.Context) ([]*Article, error) {
-	ctx, cancel := context.WithTimeout(ctx, TimeOut*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, TimeOut)
 	defer cancel()
 
 	ids, err := resourceIDS(ctx, c.Conn)
@@ -16,7 +16,8 @@ func (c *Config) Events(ctx context.Context) ([]*Article, error) {
 		return nil, err
 	}
 
-	var articles []*Article
+	articles := make([]*Article, 1)
+
 	for _, id := range ids {
 		var data []byte
 		row := c.Conn.QueryRowContext(

@@ -8,16 +8,19 @@ import (
 	"github.com/riyadennis/blog-management/api/v1/article/post"
 )
 
+// Handler for articles end point
 type Handler struct {
 	resourceID string
 }
 
+// NewHandler returns article handler
 func NewHandler(resourceID string) *Handler {
 	return &Handler{
 		resourceID: resourceID,
 	}
 }
 
+// ServeHTTP handler for articles end point now supports POST,PATCH and GET
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp []byte
 	switch r.Method {
